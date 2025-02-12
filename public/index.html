@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"
+      integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <title>GAMEEE</title>
+    <style>
+      * {
+        margin: 0;
+        overflow: hidden;
+        padding: 0;
+        font-family: 'Press Start 2P', serif;
+      }
+
+      body {
+        margin: 0;
+        background-color: black;
+      }
+
+      button {
+        border: 0;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      button:hover {
+        background-color: #ddd;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div style="position: relative; display: inline-block">
+      <div
+        id="overlappingDiv"
+        style="
+          z-index: 2;
+          background-color: black;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          opacity: 0;
+          pointer-events: none;
+        "
+      ></div>
+      <section id="battle-wrapper" style="display: none">
+        <div
+          style="
+            background: white;
+            width: 250px;
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            border: 4px solid black;
+            padding: 12px;
+          "
+        >
+          <h4>Draggle</h4>
+          <div
+            style="
+              height: 5px;
+              background-color: #ccc;
+              margin-top: 10px;
+              position: relative;
+            "
+          >
+            <div
+              id="enemyHealthBar"
+              style="
+                height: 5px;
+                background-color: green;
+                position: absolute;
+                left: 0;
+                top: 0;
+                right: 0;
+              "
+            ></div>
+          </div>
+        </div>
+        <div
+          style="
+            background: white;
+            width: 250px;
+            position: absolute;
+            bottom: 180px;
+            right: 50px;
+            border: 4px solid black;
+            padding: 12px;
+          "
+        >
+          <h4>Emby</h4>
+          <div
+            style="
+              height: 5px;
+              background-color: #ccc;
+              margin-top: 10px;
+              position: relative;
+            "
+          >
+            <div
+              id="embyHealthBar"
+              style="
+                height: 5px;
+                background-color: green;
+                position: absolute;
+                left: 0;
+                top: 0;
+                right: 0;
+              "
+            ></div>
+          </div>
+        </div>
+        <div
+          style="
+            background-color: white;
+            height: 130px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-top: 4px solid black;
+            display: flex;
+          "
+        >
+          <div
+            style="
+              position: absolute;
+              right: 0;
+              bottom: 0;
+              left: 0;
+              top: 0;
+              padding: 12px;
+              display: none;
+              background-color: white;
+              cursor: pointer;
+            "
+            id="dialogBox"
+          ></div>
+          <div
+            style="
+              width: 66.66%;
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+            "
+            id="attackBox"
+          ></div>
+          <div
+            id="attackType"
+            style="
+              display: flex;
+              align-items: center;
+              width: 33.33%;
+              justify-content: center;
+              border-left: 4px solid black;
+            "
+          >
+            Attack Type
+          </div>
+        </div>
+      </section>
+      <canvas></canvas>
+    </div>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"
+      integrity="sha512-H6cPm97FAsgIKmlBA4s774vqoN24V5gSQL4yBTDOY2su2DeXZVhQPxFK4P6GPdnZqM9fg1G3cMv5wD7e6cFLZQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"
+      integrity="sha512-6+YN/9o9BWrk6wSfGxQGpt3EUK6XeHi6yeHV+TYD2GR0Sj/cggRpXr1BrAQf0as6XslxomMUxXp2vIl+fv0QRA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="./data/collisions.js"></script>
+    <script src="./data/audio.js"></script>
+    <script src="./data/battle-zone.js"></script>
+    <script src="./data/attacks.js"></script>
+    <script src="./data/monsters.js"></script>
+    <script src="./classes.js"></script>
+    <script src="./index.js"></script>
+    <script src="./battle.js"></script>
+    <script>
+      // // Change to your server URL if deployed
+      socket.on('player-joined', players => {
+        socketRef.id = socket.id
+        console.log('player joined')
+        console.log(players)
+        players
+          .filter(p => p.id !== socket.id)
+          .map(p => ({
+            sprite: new Sprite({
+              image: playerImageDown,
+              type: 'player',
+              position: {
+                x: background.position.x + 1242,
+                y: background.position.y + 638
+              },
+              id: p.id
+            }),
+            id: p.id,
+            image: p.image
+          }))
+          .forEach(p => {
+            otherPlayers.push(p.sprite)
+          })
+        movables.push(...otherPlayers)
+      })
+      socket.on('move-other-player', data => {
+        const { keys, id, moving } = data
+        if (keys.down.pressed && moving) {
+          let movedPlayer = otherPlayers.find(p => p.id == id)
+          movedPlayer.position.y += speed
+        } else if (keys.up.pressed && moving) {
+          let movedPlayer = otherPlayers.find(p => p.id == id)
+          movedPlayer.position.y -= speed
+        } else if (keys.left.pressed && moving) {
+          let movedPlayer = otherPlayers.find(p => p.id == id)
+          movedPlayer.position.x -= speed
+        } else if (keys.right.pressed && moving) {
+          let movedPlayer = otherPlayers.find(p => p.id == id)
+          movedPlayer.position.x += speed
+        }
+      })
+
+      socket.on('connect', () => {
+        console.log('connected')
+
+        socket.emit('player-joined', {
+          backgroundPosition: background.position
+        })
+      })
+      socket.on('player-left', playerId => {
+        otherPlayers = otherPlayers.filter(p => p.id !== playerId)
+        movables = movables.filter(movable => {
+          return !movable.id || movable.id !== playerId
+        })
+        console.log('player left with this id: ' + playerId)
+      })
+      socket.on('disconnect', msg => {
+        console.log('disconnected')
+      })
+    </script>
+  </body>
+</html>
