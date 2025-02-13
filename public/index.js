@@ -74,6 +74,7 @@ const background = new Sprite({
   image,
   frames: 1
 })
+const backgroundRef = { position: { ...background.position } }
 const foreground = new Sprite({
   position: {
     ...OFFSET
@@ -105,7 +106,7 @@ let otherPlayers = []
 let movingPlayers = []
 let movables = [background, ...boundries, foreground, ...battleZones]
 
-function rectangularCollision ({ player, boundary }) {
+function rectangularCollision({ player, boundary }) {
   return (
     player.position.x + player.image.width / 4 >= boundary.position.x &&
     player.position.x <= boundary.position.x + boundary.width &&
@@ -113,12 +114,20 @@ function rectangularCollision ({ player, boundary }) {
     player.position.y <= boundary.position.y + boundary.height
   )
 }
+function emitMoving(keys, moving, backgroundPosition) {
+  socket.emit('player-moving', {
+    keys,
+    moving,
+    backgroundPosition,
+    id: socketRef.id
+  })
+}
 
 let lastKey = ''
 const battle = { initiated: false }
-function animate () {
+function animate() {
   const animationId = requestAnimationFrame(animate)
-  //c.clearRect(0, 0, canvas.width, canvas.height)
+  c.clearRect(0, 0, canvas.width, canvas.height)
   movables.forEach(movable => {
     movable.draw()
   })
@@ -133,6 +142,7 @@ function animate () {
     keys.left.pressed ||
     keys.right.pressed
   ) {
+
     for (let i = 0; i < battleZones.length; i++) {
       const battleZone = battleZones[i]
       const overlappingWidth =
@@ -168,16 +178,16 @@ function animate () {
             repeat: 3,
             yoyo: true,
             duration: 0.5,
-            onComplete () {
+            onComplete() {
               gsap.to('#overlappingDiv', {
                 opacity: 1,
-                onComplete () {
+                onComplete() {
                   initBattle()
                   animateBattle()
                   gsap.to('#overlappingDiv', {
                     opacity: 0,
                     duration: 0.4,
-                    onComplete () {
+                    onComplete() {
                       document.querySelector('#battle-wrapper').style.display =
                         'block'
                     }
@@ -212,12 +222,9 @@ function animate () {
     }
     if (moving) {
       movables.forEach(movable => (movable.position.y += speed))
+      backgroundRef.position.y -= speed
     }
-    socket.emit('player-moving', {
-      keys,
-      moving,
-      backgroundPosition: background.position
-    })
+    emitMoving(keys, moving, backgroundRef.position)
   }
   if (keys.down.pressed && lastKey == 'ArrowDown') {
     for (let i = 0; i < boundries.length; i++) {
@@ -240,8 +247,9 @@ function animate () {
     }
     if (moving) {
       movables.forEach(movable => (movable.position.y -= speed))
+      backgroundRef.position.y += speed
     }
-    socket.emit('player-moving', { keys, moving })
+    emitMoving(keys, moving, backgroundRef.position)
   }
   if (keys.left.pressed && lastKey == 'ArrowLeft') {
     for (let i = 0; i < boundries.length; i++) {
@@ -262,11 +270,11 @@ function animate () {
         break
       }
     }
-    if (moving) movables.forEach(movable => (movable.position.x += speed))
-    socket.emit('player-moving', {
-      keys,
-      moving
-    })
+    if (moving) {
+      movables.forEach(movable => (movable.position.x += speed))
+      backgroundRef.position.x -= speed
+    }
+    emitMoving(keys, moving, backgroundRef.position)
   }
   if (keys.right.pressed && lastKey == 'ArrowRight') {
     for (let i = 0; i < boundries.length; i++) {
@@ -287,14 +295,17 @@ function animate () {
         break
       }
     }
-    if (moving) movables.forEach(movable => (movable.position.x -= speed))
-    socket.emit('player-moving', { keys, moving })
+    if (moving) {
+      movables.forEach(movable => (movable.position.x -= speed))
+      backgroundRef.position.x += speed
+    }
+    emitMoving(keys, moving, backgroundRef.position)
   }
 }
 animate()
 
 addEventListener('keydown', e => {
-  console.log(player.position)
+  //console.log(player.position)
 
   if (!musicIsPlaying && !battle.initiated) {
     audio.map.play()
