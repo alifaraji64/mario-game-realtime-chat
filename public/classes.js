@@ -12,7 +12,7 @@ class Boundry {
 }
 
 class Sprite {
-    constructor({ position, image, type = 'background', frames = 4, rotation = 0, attacks = [], images = [],id='' }) {
+    constructor({ position, opacity = 1, image, type = 'background', frames = 4, rotation = 0, attacks = [], images = [], id = '' }) {
         this.position = position
         this.image = image
         this.images = images
@@ -23,7 +23,7 @@ class Sprite {
         this.moving = false
         this.width = this.image.width / this.frames
         this.height = this.image.height
-        this.opacity = 1;
+        this.opacity = opacity;
         this.health = 100
         this.rotation = rotation;
         this.attacks = attacks

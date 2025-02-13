@@ -4,7 +4,8 @@ canvas.width = 1024
 canvas.height = 576
 const socket = io('http://localhost:3000')
 const socketRef = { id: null }
-
+let mouseX;
+let mouseY;
 const speed = 5
 const OFFSET = {
   x: -750,
@@ -136,12 +137,25 @@ function animate() {
 
   let moving = true
   if (battle.initiated) return
+  otherPlayers.forEach(obj => {
+    if (mouseX > obj.position.x && mouseX < obj.position.x + obj.width &&
+      mouseY > obj.position.y && mouseY < obj.position.y + obj.height) {
+      console.log('Clicked on object:', obj.id);
+    }
+  });
   if (
     keys.up.pressed ||
     keys.down.pressed ||
     keys.left.pressed ||
     keys.right.pressed
   ) {
+    // const isPlayerChangedInitialPosition = Math.abs(background.position.y-OFFSET.y)>Boundry.scaled+16
+    // for (let i = 0; i < otherPlayers.length; i++) {
+    //   const otherPlayer = otherPlayers[i];
+    //   if (rectangularCollision({ player, boundary: otherPlayer }) && isPlayerChangedInitialPosition) {
+    //     console.log('starting');
+    //   }
+    // }
 
     for (let i = 0; i < battleZones.length; i++) {
       const battleZone = battleZones[i]
@@ -367,3 +381,8 @@ addEventListener('keyup', e => {
       break
   }
 })
+canvas.addEventListener('click', (event) => {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = event.clientX - rect.left;
+  mouseY = event.clientY - rect.top;
+});

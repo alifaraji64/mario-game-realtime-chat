@@ -21,9 +21,6 @@ io.on('connection', socket => {
       position: { x: backgroundPosition.x + 1242, y: backgroundPosition.y + 638 },
       id: socket.id
     }
-    console.log('____');
-    console.log({ x: backgroundPosition.x + 1242, y: backgroundPosition.y + 638 });
-    console.log('____');
 
 
 
@@ -32,23 +29,9 @@ io.on('connection', socket => {
 
   })
   socket.on('player-moving', data => {
-
-    //bgref
     const { keys, moving, backgroundPosition, id } = data
     players.find(p => p.id == id).position.x = backgroundPosition.x + 1242
     players.find(p => p.id == id).position.y = backgroundPosition.y + 638
-    console.log('players');
-
-    console.log(players);
-
-
-    console.log('background position')
-
-    console.log(backgroundPosition)
-    console.log(players.find(p => p.id == id).position);
-
-
-
     socket.broadcast.emit('move-other-player', { keys, id: socket.id, moving })
   })
 

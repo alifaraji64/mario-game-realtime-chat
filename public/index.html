@@ -158,6 +158,9 @@
   <script>
     // // Change to your server URL if deployed
     socket.on('player-joined', players => {
+      //empty the other player and remove all the player from movables, because in each cycle we are getting all the players
+      otherPlayers = [];
+      movables = movables.filter(m => !(m.id))
       socketRef.id = socket.id
       console.log('player joined')
       console.log(players)
@@ -172,7 +175,8 @@
               x: p.position.x + background.position.x - OFFSET.x,
               y: p.position.y + background.position.y - OFFSET.y
             },
-            id: p.id
+            id: p.id,
+            opacity:0.8
           }),
           id: p.id,
           image: p.image
@@ -181,21 +185,22 @@
           otherPlayers.push(p.sprite)
         })
       movables.push(...otherPlayers)
-      console.log(movables.filter(m => {
-        return !!(m.id)
-      }));
     })
     socket.on('move-other-player', data => {
       const { keys, id, moving } = data
       let movedPlayer = otherPlayers.find(p => p.id == id)
       if (keys.down.pressed && moving) {
         movedPlayer.position.y += speed
+        movedPlayer.image = playerImageDown
       } else if (keys.up.pressed && moving) {
         movedPlayer.position.y -= speed
+        movedPlayer.image = playerImageUp
       } else if (keys.left.pressed && moving) {
         movedPlayer.position.x -= speed
+        movedPlayer.image = playerImageLeft
       } else if (keys.right.pressed && moving) {
         movedPlayer.position.x += speed
+        movedPlayer.image = playerImageRight
       }
     })
 
