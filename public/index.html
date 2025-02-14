@@ -147,15 +147,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"
     integrity="sha512-6+YN/9o9BWrk6wSfGxQGpt3EUK6XeHi6yeHV+TYD2GR0Sj/cggRpXr1BrAQf0as6XslxomMUxXp2vIl+fv0QRA=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="./data/collisions.js"></script>
   <script src="./data/audio.js"></script>
   <script src="./data/battle-zone.js"></script>
   <script src="./data/attacks.js"></script>
   <script src="./data/monsters.js"></script>
   <script src="./classes.js"></script>
+  <script src="./utils.js"></script>
   <script src="./index.js"></script>
+  <script src="./event-listeners.js"></script>
   <script src="./battle.js"></script>
   <script>
+    var peer = new Peer();
+    let myPeerId = null;
+    peer.on('open', function (id) {
+      console.log('My peer ID is: ' + id);
+      myPeerId = id;
+    });
     // // Change to your server URL if deployed
     socket.on('player-joined', players => {
       //empty the other player and remove all the player from movables, because in each cycle we are getting all the players
@@ -163,7 +172,7 @@
       movables = movables.filter(m => !(m.id))
       socketRef.id = socket.id
       console.log('player joined')
-      console.log(players)
+      //console.log(players)
 
       players
         .filter(p => p.id !== socket.id)
@@ -176,7 +185,7 @@
               y: p.position.y + background.position.y - OFFSET.y
             },
             id: p.id,
-            opacity:0.8
+            opacity: 0.8
           }),
           id: p.id,
           image: p.image
@@ -221,6 +230,24 @@
     socket.on('disconnect', msg => {
       console.log('disconnected')
     })
+    socket.on('start-voice-call', peerId => {
+      const conn = peer.connect(peerId);
+      console.log('gtgtg');
+    })
+    peer.on('connection', function (conn) {
+      console.log('connection established');
+      conn.on('open', function () {
+        // Send messages
+        conn.send('Hello!');
+      });
+      conn.on('data', function (data) {
+        // Will print 'hi!'
+        console.log(data);
+      });
+    });
+    function startVoiceChat(socketId) {
+      socket.emit('start-voice-call', { peerId: myPeerId, socketId })
+    }
   </script>
 </body>
 

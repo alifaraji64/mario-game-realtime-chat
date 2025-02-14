@@ -51,7 +51,6 @@ battleZoneMap.forEach((row, i) => {
     )
   })
 })
-console.log(battleZones)
 
 const image = new Image()
 image.src = './assets/map.png'
@@ -126,6 +125,7 @@ function emitMoving(keys, moving, backgroundPosition) {
 
 let lastKey = ''
 const battle = { initiated: false }
+const voiceChat = { initiated: false }
 function animate() {
   const animationId = requestAnimationFrame(animate)
   c.clearRect(0, 0, canvas.width, canvas.height)
@@ -137,39 +137,26 @@ function animate() {
 
   let moving = true
   if (battle.initiated) return
-  otherPlayers.forEach(obj => {
-    if (mouseX > obj.position.x && mouseX < obj.position.x + obj.width &&
-      mouseY > obj.position.y && mouseY < obj.position.y + obj.height) {
-      console.log('Clicked on object:', obj.id);
-    }
-  });
+  if (voiceChat.initiated == false) {
+    otherPlayers.forEach(obj => {
+      if (mouseX > obj.position.x && mouseX < obj.position.x + obj.width &&
+        mouseY > obj.position.y && mouseY < obj.position.y + obj.height) {
+        startVoiceChat(obj.id)
+        voiceChat.initiated = true;
+      }
+    });
+  }
+  //console.log(voiceChat.initiated);
+
   if (
     keys.up.pressed ||
     keys.down.pressed ||
     keys.left.pressed ||
     keys.right.pressed
   ) {
-    // const isPlayerChangedInitialPosition = Math.abs(background.position.y-OFFSET.y)>Boundry.scaled+16
-    // for (let i = 0; i < otherPlayers.length; i++) {
-    //   const otherPlayer = otherPlayers[i];
-    //   if (rectangularCollision({ player, boundary: otherPlayer }) && isPlayerChangedInitialPosition) {
-    //     console.log('starting');
-    //   }
-    // }
 
     for (let i = 0; i < battleZones.length; i++) {
       const battleZone = battleZones[i]
-      const overlappingWidth =
-        Math.min(
-          battleZone.position.x + battleZone.width,
-          player.position.x + player.width
-        ) - Math.max(battleZone.position.x, player.position.x)
-      const overlappingHeight =
-        Math.min(
-          battleZone.position.y + battleZone.height,
-          player.position.y + player.height
-        ) - Math.max(battleZone.position.y, player.position.y)
-      const overlappingArea = overlappingHeight * overlappingWidth
       if (
         rectangularCollision({
           player,
@@ -177,7 +164,7 @@ function animate() {
         })
       ) {
         if (
-          overlappingArea > (player.width * player.height) / 3 &&
+          calcOverlappingArea({ player, battleZone }) > (player.width * player.height) / 3 &&
           Math.random() < 0.02
         ) {
           console.log('battle started')
@@ -318,71 +305,4 @@ function animate() {
 }
 animate()
 
-addEventListener('keydown', e => {
-  //console.log(player.position)
 
-  if (!musicIsPlaying && !battle.initiated) {
-    audio.map.play()
-    musicIsPlaying = true
-  }
-  switch (e.key) {
-    case 'ArrowUp':
-      keys.up.pressed = true
-      lastKey = 'ArrowUp'
-      if (battle.initiated) return
-      player.moving = true
-      player.image = player.images.up
-      break
-    case 'ArrowDown':
-      keys.down.pressed = true
-      lastKey = 'ArrowDown'
-      if (battle.initiated) return
-      player.moving = true
-      player.image = player.images.down
-      break
-    case 'ArrowLeft':
-      keys.left.pressed = true
-      lastKey = 'ArrowLeft'
-      if (battle.initiated) return
-      player.moving = true
-      player.image = player.images.left
-      break
-    case 'ArrowRight':
-      keys.right.pressed = true
-      lastKey = 'ArrowRight'
-      if (battle.initiated) return
-      player.moving = true
-      player.image = player.images.right
-      break
-    default:
-      break
-  }
-})
-
-addEventListener('keyup', e => {
-  switch (e.key) {
-    case 'ArrowUp':
-      keys.up.pressed = false
-      player.moving = false
-      break
-    case 'ArrowDown':
-      keys.down.pressed = false
-      player.moving = false
-      break
-    case 'ArrowLeft':
-      keys.left.pressed = false
-      player.moving = false
-      break
-    case 'ArrowRight':
-      keys.right.pressed = false
-      player.moving = false
-      break
-    default:
-      break
-  }
-})
-canvas.addEventListener('click', (event) => {
-  const rect = canvas.getBoundingClientRect();
-  mouseX = event.clientX - rect.left;
-  mouseY = event.clientY - rect.top;
-});

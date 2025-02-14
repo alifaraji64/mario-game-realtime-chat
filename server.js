@@ -21,9 +21,6 @@ io.on('connection', socket => {
       position: { x: backgroundPosition.x + 1242, y: backgroundPosition.y + 638 },
       id: socket.id
     }
-
-
-
     players.push(player)
     io.emit('player-joined', players)
 
@@ -33,6 +30,9 @@ io.on('connection', socket => {
     players.find(p => p.id == id).position.x = backgroundPosition.x + 1242
     players.find(p => p.id == id).position.y = backgroundPosition.y + 638
     socket.broadcast.emit('move-other-player', { keys, id: socket.id, moving })
+  })
+  socket.on('start-voice-call', ({ peerId, socketId }) => {
+    io.to(socketId).emit('start-voice-call', peerId)
   })
 
   socket.on('disconnect', () => {
