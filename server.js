@@ -8,7 +8,7 @@ const app = express()
 app.use(cors())
 const server = createServer(app)
 // Serve static files (if your HTML is in a folder)
-app.use(express.static('public'))
+app.use(express.static(path.join(__dirname, 'public')));
 app.get('/',(req,res)=>{
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 })
