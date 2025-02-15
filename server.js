@@ -8,6 +8,9 @@ app.use(cors())
 const server = createServer(app)
 // Serve static files (if your HTML is in a folder)
 app.use(express.static('public'))
+app.get('/',(req,res)=>{
+  res.send('hi')
+})
 const io = new Server(server, {
   cors: {
     origin: '*', // Allow all origins (adjust for security in production)
