@@ -6,6 +6,8 @@ let players = []
 const app = express()
 app.use(cors())
 const server = createServer(app)
+// Serve static files (if your HTML is in a folder)
+app.use(express.static('public'))
 const io = new Server(server, {
   cors: {
     origin: '*', // Allow all origins (adjust for security in production)
@@ -41,10 +43,13 @@ io.on('connection', socket => {
   })
 })
 
-// Serve static files (if your HTML is in a folder)
-app.use(express.static('public'))
+// Error handling
+server.on('error', (error) => {
+  console.error('Server error:', error);
+});
 
 // Start server
-server.listen(3000, () => {
-  console.log('Server running on port 3000')
-})
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
