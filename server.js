@@ -14,10 +14,12 @@ app.get('/',(req,res)=>{
 })
 const io = new Server(server, {
   cors: {
-    origin: '*', // Allow all origins (adjust for security in production)
-    methods: ['GET', 'POST']
+    origin: '*',
+    methods: ['GET', 'POST'],
+    transports: ['websocket', 'polling'],
+    credentials: true
   }
-})
+});
 
 io.on('connection', socket => {
   console.log('A user connected:', socket.id)

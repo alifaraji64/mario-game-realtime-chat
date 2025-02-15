@@ -2,7 +2,7 @@ addEventListener('keydown', e => {
     //console.log(player.position)
 
     if (!musicIsPlaying && !battle.initiated) {
-        //audio.map.play()
+        audio.map.play()
         musicIsPlaying = true
     }
     switch (e.key) {

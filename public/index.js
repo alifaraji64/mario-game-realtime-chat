@@ -2,7 +2,7 @@ const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 canvas.width = 1024
 canvas.height = 576
-const socket = io('http://localhost:3000')
+const socket = io('wss://mario-game-realtime-chat.onrender.com', { transports: ['websocket'] });
 const socketRef = { id: null }
 let mouseX;
 let mouseY;
